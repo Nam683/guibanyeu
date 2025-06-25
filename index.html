@@ -2,194 +2,66 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Web Chứng Khoán Giả Lập</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Video Full Web Có Nhạc</title>
   <style>
-    body {
-      background-color: #1e1e1e;
-      color: white;
-      font-family: Arial, sans-serif;
+    * {
       margin: 0;
-      padding: 20px;
-      text-align: center;
+      padding: 0;
+      box-sizing: border-box;
     }
-    h1 {
-      color: #00ff99;
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: black;
+      overflow: hidden;
     }
-.account-info {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  background-color: #2b2b2b;
-  border: 2px solid #444;
-  border-radius: 10px;
-  padding: 10px 15px;
-  width: 220px;
-  box-shadow: 0 0 10px rgba(0,255,153,0.3);
-  text-align: left;
-  font-size: 14px;
-}
-    }
-    .account-info h2 {
-      margin: 5px 0;
-      color: #00ffcc;
-    }
-    canvas {
-      background-color: #2b2b2b;
-      border: 2px solid #444;
-      border-radius: 10px;
-      padding: 10px;
-      max-width: 600px;
-      margin: 0 auto;
+    video {
+      width: 100vw;
+      height: 100vh;
+      object-fit: contain;
+      background-color: black;
       display: block;
     }
-    .buttons {
-      margin-top: 15px;
-    }
-    .buttons button {
-      background-color: #00ff99;
-      color: black;
-      font-size: 16px;
+    .notice {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.7);
+      color: white;
       padding: 10px 20px;
-      margin: 5px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    .buttons button:hover {
-      background-color: #00cc77;
+      border-radius: 10px;
+      font-size: 16px;
+      display: none;
+      z-index: 10;
     }
   </style>
 </head>
 <body>
-  <h1>📈 Web Chứng Khoán Giả Lập</h1>
-
-  <div class="account-info">
-    <h2>👤 Tài khoản: <span id="username">hohoangnam</span></h2>
-    <h2>💰 Số dư: <span id="balance">50,000,000 VNĐ</span></h2>
-    <h2>📦 Cổ phiếu đang có: <span id="stocks">0</span></h2>
-  </div>
-
-  <canvas id="stockChart" width="600" height="300"></canvas>
-
-  <div class="buttons">
-    <button onclick="buyStock()">🟢 Mua</button>
-    <button onclick="sellStock()">🔴 Bán</button>
-  </div>
+  <div class="notice" id="notice"> Chạm vào màn hình đi bạn yêu</div>
+  <video id="video" src="snaptik_7518656806428658951.mp4" autoplay loop playsinline></video>
 
   <script>
-    const ctx = document.getElementById('stockChart').getContext('2d');
-    const balanceEl = document.getElementById('balance');
-    const stocksEl = document.getElementById('stocks');
+    const video = document.getElementById('video');
+    const notice = document.getElementById('notice');
 
-    let balance = 50000000;
-    let stocks = 0;
-    let labels = [];
-    let data = [];
+    // Không muted → cố gắng phát video có tiếng
+    video.muted = false;
 
-    function generateDataPoint(lastValue) {
-      const random = Math.random();
-      let change = 0;
-      if (random < 0.5) change = Math.random() * 10;
-      else if (random < 0.85) change = -Math.random() * 10;
-      else change = 0;
-      return Math.max(1, lastValue + change);
-    }
-
-    function formatCurrency(num) {
-      return num.toLocaleString('vi-VN') + ' VNĐ';
-    }
-
-    let last = 100;
-    for (let i = 0; i < 20; i++) {
-      labels.push(`T${i+1}`);
-      last = generateDataPoint(last);
-      data.push(last.toFixed(2));
-    }
-
-    let chartColor = '#00ff99';
-    let chart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: 'Giá cổ phiếu',
-          data: data,
-          borderColor: chartColor,
-          backgroundColor: 'rgba(0,255,153,0.1)',
-          tension: 0.2,
-          fill: true,
-          pointRadius: 5,
-          pointStyle: 'rect',
-          pointBackgroundColor: chartColor,
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          x: { ticks: { color: 'white' } },
-          y: { ticks: { color: 'white' } }
-        },
-        plugins: {
-          legend: { labels: { color: 'white' } }
-        }
-      }
+    // Bắt đầu phát
+    video.play().catch(() => {
+      notice.style.display = 'block'; // Nếu bị chặn, hiện thông báo
     });
 
-    function updateDisplay() {
-      balanceEl.textContent = formatCurrency(balance);
-      stocksEl.textContent = stocks;
-    }
-
-    function buyStock() {
-      const price = parseFloat(data[data.length - 1]);
-      if (balance >= price * 10000) {
-        balance -= price * 10000;
-        stocks += 1;
-        updateDisplay();
-      } else {
-        alert("Không đủ tiền để mua!");
-      }
-    }
-
-    function sellStock() {
-      if (stocks > 0) {
-        const price = parseFloat(data[data.length - 1]);
-        balance += price * 10000;
-        stocks -= 1;
-        updateDisplay();
-      } else {
-        alert("Bạn không có cổ phiếu để bán!");
-      }
-    }
-
-    setInterval(() => {
-      const nextLabel = `T${labels.length + 1}`;
-      labels.push(nextLabel);
-
-      const prevPrice = parseFloat(data[data.length - 1]);
-      const newPrice = generateDataPoint(prevPrice);
-      data.push(newPrice.toFixed(2));
-
-      if (labels.length > 20) {
-        labels.shift();
-        data.shift();
-      }
-
-      const isIncrease = newPrice > prevPrice;
-      const color = isIncrease ? '#00ff99' : '#ff4444';
-      const bgColor = isIncrease ? 'rgba(0,255,153,0.1)' : 'rgba(255,68,68,0.1)';
-
-      chart.data.datasets[0].borderColor = color;
-      chart.data.datasets[0].backgroundColor = bgColor;
-      chart.data.datasets[0].pointBackgroundColor = color;
-
-      chart.update();
-    }, 2000);
-
-    updateDisplay();
+    // Khi người dùng chạm, phát lại video có tiếng
+    document.body.addEventListener('click', () => {
+      video.play().then(() => {
+        notice.style.display = 'none';
+      }).catch(() => {
+        notice.textContent = "Trình duyệt không cho phép phát nhạc tự động!";
+      });
+    }, { once: true });
   </script>
 </body>
 </html>
